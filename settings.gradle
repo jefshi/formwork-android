@@ -1,0 +1,7 @@
+include ':app'
+
+// 与业务无关的工具类（与 UI 无关）
+include ':lib-util'
+
+// 与业务无关的组件（与 UI 相关，包括类似对话框的组件、自定义 View、以及相关工具等）
+include ':lib-widget'

@@ -1,8 +1,8 @@
 # 模板说明
 
-- 【名称】：formwork-lib
+- 【名称】：formwork-lib-androidx
 - 【说明】：Android 依赖库或自定义 View 项目的模板
-- 【备注】：使用 support
+- 【备注】：使用 androidx
 - 【module】：lib-xxx、view-xxx、sample
 
 ### 使用说明

@@ -1,0 +1,135 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
+
+def APP_NAME = "formwork-project-android"
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.csp.formwork"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+
+        flavorDimensions "applicationId"
+        resValue "string", "app_name", "${APP_NAME}"
+    }
+
+    signingConfigs {
+        // staging.initWith(signingConfigs.debug)
+
+        debug {
+            storeFile file(KEY_APP_STOREFILE_DEBUG)
+            storePassword KEY_STORE_PASSWORD_DEBUG
+            keyAlias KEY_ALIAS_DEBUG
+            keyPassword KEY_PASSWORD_DEBUG
+        }
+
+        release {
+            storeFile file(KEY_APP_STOREFILE_RELEASE)
+            storePassword KEY_STORE_PASSWORD_RELEASE
+            keyAlias KEY_ALIAS_RELEASE
+            keyPassword KEY_PASSWORD_RELEASE
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility rootProject.ext.sourceCompatibilityVersion
+        targetCompatibility rootProject.ext.targetCompatibilityVersion
+    }
+
+    productFlavors {
+        publish {
+        }
+
+        dev {
+            applicationIdSuffix ".dev"
+        }
+
+        dtest {
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+            zipAlignEnabled false
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            signingConfig signingConfigs.release
+            zipAlignEnabled true
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            def now = new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC+8"))
+            outputFileName = "app-${variant.buildType.name}-v${versionName}-${variant.flavorName}-${now}.apk"
+        }
+
+        buildConfigField "boolean", "IS_DEV", "${(variant.flavorName == "dev")}"
+        buildConfigField "boolean", "IS_TEST", "${(variant.flavorName == "test")}"
+
+        switch (variant.flavorName) {
+            case "dev":
+            case "test":
+                resValue "string", "app_name", "${APP_NAME}(${variant.flavorName})"
+                buildConfigField "boolean", "IS_DEBUGGABLE", "true"
+                break
+            default:
+                if (variant.buildType.name == "debug") {
+                    resValue "string", "app_name", "${APP_NAME}(debug)"
+                    buildConfigField "boolean", "IS_DEBUGGABLE", "true"
+                } else {
+                    buildConfigField "boolean", "IS_DEBUGGABLE", "false"
+                }
+                break
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+greendao {
+    schemaVersion 0
+    daoPackage "${android.defaultConfig.applicationId}.database.dao"
+    targetGenDir 'src/main/java'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // android
+    implementation dep.support_appcompat_v7
+    implementation dep.support_constraint_layout
+    implementation dep.support_recyclerview_v7
+
+    // google
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    // library
+    implementation project(':lib-util')
+//    implementation project(':lib-widget')
+
+    // 开发基础工具
+    implementation 'org.greenrobot:greendao:3.2.2'
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+    // 其他
+
+    // testImplementation 'junit:junit:4.12'
+    // androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    // androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
